@@ -447,8 +447,10 @@ def main():
     )
 
     app.add_handler(CommandHandler("start", cmd_start))
+    app.add_handler(CallbackQueryHandler(show_commands_callback, pattern="^show_commands$"))  # ← ADD THIS
     app.add_handler(anime_conv)
     app.add_handler(brand_conv)
+    
 
     print("🤖 Bot running...")
     app.run_polling()

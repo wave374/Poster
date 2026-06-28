@@ -291,11 +291,11 @@ def fetch_anime(name: str) -> list[dict]:
 
 # ─── BOT HANDLERS ─────────────────────────────────────────────────────────────
 async def cmd_start(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    first = update.effective_user.first_name
     welcome_text = (
-        "✦ *HEY THERE!* ✦\n\n"
-        "◇ I'm your friendly *Animeflio* assistant.\n"
-        "◇ I can help you create awesome posters for your favorite anime!\n"
-        "◇ Use the button below to see all commands."
+        f"ʜᴇʟʟᴏ, {first}\n\n"
+        ">ᴡᴇʟᴄᴏᴍᴇ ᴛᴏ ᴀɴɪᴍᴇғʟɪᴏ ᴘᴏsᴛᴇʀ ʙᴏᴛ\n\n"
+        ">ɪ'ᴍ ʏᴏᴜʀ ᴀᴜᴛᴏ ᴛʜᴜᴍʙɴᴀɪʟ ᴍᴀᴋᴇʀ, ʀᴇᴀᴅʏ ᴛᴏ ᴄʀᴇᴀᴛᴇ sᴛᴜɴɴɪɴɢ ᴀɴɪᴍᴇ ᴅᴇsɪɢɴs ғᴏʀ ʏᴏᴜ\\."
     )
     keyboard = InlineKeyboardMarkup([
         [InlineKeyboardButton("• ᴍʏ ᴀʟʟ ᴄᴏᴍᴍᴀɴᴅꜱ •", callback_data="show_commands")],
@@ -303,7 +303,7 @@ async def cmd_start(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_photo(
         photo="https://i.postimg.cc/RF6b28py/e25348fdc52abcafa9e951f6a3d1a51a.jpg",
         caption=welcome_text,
-        parse_mode="Markdown",
+        parse_mode="MarkdownV2",
         reply_markup=keyboard
     )
 

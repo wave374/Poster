@@ -361,7 +361,7 @@ def build_poster_cinematic(anime: dict, photo_bytes: bytes, brand: str, theme_na
     # Metadata row
     meta_y = H - 72
     meta_items = [
-        ("STUDIO", "Unknown"), ("EPISODES", episodes),
+        ("STUDIO", studio), ("EPISODES", episodes),
         ("RELEASED", year), ("FORMAT", "TV"), ("SCORE", f"{score}%"),
     ]
     col_w_m = card_w // len(meta_items)

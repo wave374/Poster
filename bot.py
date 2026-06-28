@@ -341,10 +341,10 @@ async def developer_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
     dev_text = (
-        "👨‍💻 *ᴅᴇᴠᴇʟᴏᴘᴇʀ ɪɴғᴏ*\n\n"
-        "» ᴄʀᴇᴀᴛᴏʀ: [WAVE](https://t.me/Wave_189)\n"
-        "» ʙᴏᴛ: [ᴀɴɪᴍᴇғʟɪᴏ ʙᴏᴛ](https://t.me/)\n"
-        "» sᴜᴘᴘᴏʀᴛ: [ᴀɴɪᴍᴇғʟɪᴏ ᴄʜᴀᴛ](https://t.me/YOUR_GROUP)"
+        "ᴅᴇᴠᴇʟᴏᴘᴇʀ ɪɴғᴏ\n\n"
+        ">» ᴄʀᴇᴀᴛᴏʀ: [WAVE](https://t.me/wave_189)\n"
+        ">» ʙᴏᴛ: [Aᴜɢᴜsᴛᴀ](https://t.me/Roxy_x_bot)\n"
+        ">» sᴜᴘᴘᴏʀᴛ: [Sᴜᴘᴘᴏʀᴛ ᴄʜᴀᴛ](https://t.me/wave_domain)"
     )
     keyboard = InlineKeyboardMarkup([
         [InlineKeyboardButton("ʙᴀᴄᴋ", callback_data="back_start"), InlineKeyboardButton("ᴄʟᴏꜱᴇ", callback_data="cmd_cancel")],

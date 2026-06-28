@@ -116,6 +116,7 @@ def build_poster(anime: dict, photo_bytes: bytes, brand: str, color: str = "colo
 
     # TEXT_SAFE_X — hexes left of this are dark (no image), right show image
     TEXT_SAFE_X = 500
+    CORNER_ACCENT_X = W - int(MCOLW * 1.5)  # last 1-2 columns get accent color
 
     m_cols = int((W - start_col_x) / MCOLW) + 3
     m_rows = int(H / MHH) + 3
@@ -141,15 +142,21 @@ def build_poster(anime: dict, photo_bytes: bytes, brand: str, color: str = "colo
                 ImageDraw.Draw(dark_layer).polygon(pts, fill=dark_c)
                 base_rgba = Image.alpha_composite(base_rgba, dark_layer)
             else:
-                # Image hex — clip character image into this hex
-                mask = Image.new("L", (W, H), 0)
-                ImageDraw.Draw(mask).polygon(pts, fill=255)
-                char_layer = Image.new("RGBA", (W, H), (0, 0, 0, 0))
-                char_layer.paste(char_img, (char_x, 0), char_img)
-                r2, g2, b2, a2 = char_layer.split()
-                a2 = Image.composite(a2, Image.new("L", (W, H), 0), mask)
-                char_layer = Image.merge("RGBA", (r2, g2, b2, a2))
-                base_rgba = Image.alpha_composite(base_rgba, char_layer)
+                # Corner hexes (rightmost) filled with accent color
+                if cx > CORNER_ACCENT_X and (cy < MHH or cy > H - MHH):
+                    accent_layer = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+                    ImageDraw.Draw(accent_layer).polygon(pts, fill=(*accent, 220))
+                    base_rgba = Image.alpha_composite(base_rgba, accent_layer)
+                else:
+                    # Image hex
+                    mask = Image.new("L", (W, H), 0)
+                    ImageDraw.Draw(mask).polygon(pts, fill=255)
+                    char_layer = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+                    char_layer.paste(char_img, (char_x, 0), char_img)
+                    r2, g2, b2, a2 = char_layer.split()
+                    a2 = Image.composite(a2, Image.new("L", (W, H), 0), mask)
+                    char_layer = Image.merge("RGBA", (r2, g2, b2, a2))
+                    base_rgba = Image.alpha_composite(base_rgba, char_layer)
 
             # Glowing hex border on all hexes
             bl = Image.new("RGBA", (W, H), (0, 0, 0, 0))

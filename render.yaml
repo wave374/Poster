@@ -1,9 +1,8 @@
 services:
-  -     type: background_worker
+  -     type: web
     name: anime-poster-bot
     runtime: python
-    buildCommand: |
-      apt-get install -y libjpeg-dev zlib1g-dev libpng-dev libfreetype6-dev && pip install -r requirements.txt
+    buildCommand: pip install --upgrade pip && pip install -r requirements.txt
     startCommand: python bot.py
     envVars:
       - key: PYTHON_VERSION

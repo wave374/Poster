@@ -181,13 +181,13 @@ def build_poster(anime: dict, photo_bytes: bytes, brand: str) -> bytes:
     import re as _re
     season_match = _re.search(r'season\s*(\d+)', title_upper, flags=_re.IGNORECASE)
     if not season_match:
-        season_match = _re.search(r'\b(\d+)\b', title_upper)
+        season_match = _re.search(r'\s+(\d+)$', title_upper)
     if season_match:
-    season_num = season_match.group(1)
-    season_text = f"SEASON {season_num}"
-    title_upper = _re.sub(r'\s*season\s*\d+|\s*\b' + season_num + r'\b', '', title_upper, flags=_re.IGNORECASE).strip()
-    draw.text((38, title_bottom + 2), season_text, font=load_font(int(f_title.size * 0.6), bold=True), fill=GREEN)
-    title_bottom = draw.textbbox((38, title_bottom + 2), season_text, font=load_font(int(f_title.size * 0.6), bold=True))[3]
+        season_num = season_match.group(1)
+        season_text = f"SEASON {season_num}"
+        title_upper = _re.sub(r'\s*season\s*\d+|\s*\b' + season_num + r'\b', '', title_upper, flags=_re.IGNORECASE).strip()
+        draw.text((38, title_bottom + 2), season_text, font=load_font(int(f_title.size * 0.6), bold=True), fill=GREEN)
+        title_bottom = draw.textbbox((38, title_bottom + 2), season_text, font=load_font(int(f_title.size * 0.6), bold=True))[3]
 
     # ── Step 7: Genre tags ──
     gy = title_bottom + 20

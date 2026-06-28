@@ -87,7 +87,9 @@ def build_poster(anime: dict, photo_bytes: bytes, brand: str, color: str = "colo
     draw = ImageDraw.Draw(base)
 
     # ── STEP 1: Small background hex grid (subtle, full canvas) ──
-    HS = 70
+    SMALL_HEX = 42
+
+    HS = SMALL_HEX
     HH = math.sqrt(3) * HS
     COL_W = HS * 2 * 0.75
     for col in range(-1, int(W / COL_W) + 3):
@@ -108,8 +110,10 @@ def build_poster(anime: dict, photo_bytes: bytes, brand: str, color: str = "colo
     else:
         char_x = W - new_w
 
-    # ── STEP 3: Large hex mosaic ──
-    MHS = 115
+    # ── STEP 3: Large hex mosaic ─
+    BIG_HEX = 92
+
+    MHS = BIG_HEX
     MHH = math.sqrt(3) * MHS
     MCOLW = MHS * 2 * 0.75
     start_col_x = 420

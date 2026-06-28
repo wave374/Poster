@@ -210,11 +210,39 @@ def build_poster(anime: dict, photo_bytes: bytes, brand: str, theme_name: str = 
         draw.text((gx + pw // 2, gy + pill_h // 2), g.upper(), font=f_genre, fill=WHITE, anchor="mm")
         gx += pw + 10
 
-    # ── GLASSMORPHISM DESCRIPTION CARD ── (Genres → Description = 30px)
+    # ── GLASSMORPHISM DESCRIPTION CARD ──
     card_x = LEFT
     card_y = gy + pill_h + 30
     card_w = int(W * 0.54)
     card_h = 148
+
+    # Blur region behind card
+    region = base.crop((card_x, card_y, card_x + card_w, card_y + card_h))
+    blurred_r = region.filter(ImageFilter.GaussianBlur(16))
+    cmask = Image.new("L", (card_w, card_h), 0)
+    ImageDraw.Draw(cmask).rounded_rectangle([0, 0, card_w, card_h], radius=16, fill=255)
+
+    # Very subtle dark tint (NOT white)
+    dark_tint = Image.new("RGBA", (card_w, card_h), (15, 15, 20, 60))
+    blurred_r_rgba = blurred_r.convert("RGBA")
+    blurred_r_rgba.paste(dark_tint, (0, 0), dark_tint)
+    base.paste(blurred_r_rgba.convert("RGB"), (card_x, card_y), cmask)
+
+    draw = ImageDraw.Draw(base)
+    # Very thin low-opacity border
+    draw.rounded_rectangle([card_x, card_y, card_x + card_w, card_y + card_h],
+                           radius=16, outline=(255, 255, 255, 20), width=1)
+
+    # Synopsis text — accent-tinted color
+    f_syn = load_font(14)
+    wrapped = textwrap.wrap(syn_clean, width=66)
+    sy = card_y + 20
+    text_color = tuple(min(255, 160 + c // 3) for c in ACCENT)  # accent-tinted white
+    for line in wrapped[:5]:
+        draw.text((card_x + 20, sy), line, font=f_syn, fill=text_color)
+        sy += 22
+    if len(wrapped) > 5:
+        draw.text((card_x + 20, sy), "...read more", font=f_syn, fill=ACCENT)
 
     # Frosted glass: blur region behind card, then overlay semi-transparent layer
     region = base.crop((card_x, card_y, card_x + card_w, card_y + card_h))
@@ -234,8 +262,9 @@ def build_poster(anime: dict, photo_bytes: bytes, brand: str, theme_name: str = 
     f_syn = load_font(14)
     wrapped = textwrap.wrap(syn_clean, width=66)
     sy = card_y + 20
+    text_color = tuple(min(255, 160 + c // 3) for c in ACCENT)
     for line in wrapped[:5]:
-        draw.text((card_x + 20, sy), line, font=f_syn, fill=(210, 210, 215))
+        draw.text((card_x + 20, sy), line, font=f_syn, fill=text_color)
         sy += 22
     if len(wrapped) > 5:
         draw.text((card_x + 20, sy), "...read more", font=f_syn, fill=ACCENT)

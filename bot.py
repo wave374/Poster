@@ -445,7 +445,10 @@ def main():
     app = Application.builder().token(BOT_TOKEN).build()
 
     anime_conv = ConversationHandler(
-        entry_points=[CommandHandler("anime", cmd_anime)],
+        entry_points=[
+    CommandHandler("anime", cmd_anime),
+    CallbackQueryHandler(cmd_anime_callback, pattern="^cmd_anime$"),
+],
         states={
             ASK_ANIME:   [MessageHandler(filters.TEXT & ~filters.COMMAND, received_anime_name)],
             ASK_CONFIRM: [CallbackQueryHandler(anime_selected)],
@@ -457,7 +460,10 @@ def main():
     )
 
     brand_conv = ConversationHandler(
-        entry_points=[CommandHandler("brand", cmd_brand)],
+        entry_points=[
+    CommandHandler("brand", cmd_brand),
+    CallbackQueryHandler(cmd_brand_callback, pattern="^cmd_brand$"),
+],
         states={
             ASK_BRAND: [MessageHandler(filters.TEXT & ~filters.COMMAND, received_brand)],
         },
@@ -466,8 +472,6 @@ def main():
 
     app.add_handler(CommandHandler("start", cmd_start))
     app.add_handler(CallbackQueryHandler(show_commands_callback, pattern="^show_commands$"))  
-    app.add_handler(CallbackQueryHandler(cmd_anime_callback, pattern="^cmd_anime$"))
-    app.add_handler(CallbackQueryHandler(cmd_brand_callback, pattern="^cmd_brand$"))
     app.add_handler(CallbackQueryHandler(cmd_cancel_callback, pattern="^cmd_cancel$"))
     app.add_handler(anime_conv)
     app.add_handler(brand_conv)

@@ -313,7 +313,7 @@ async def show_commands_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE)
     keyboard = InlineKeyboardMarkup([
         [InlineKeyboardButton("• ᴄʀᴇᴀᴛᴇ ᴘᴏꜱᴛᴇʀ •", callback_data="cmd_anime")],
         [InlineKeyboardButton("• ᴄʜᴀɴɢᴇ ʙʀᴀɴᴅ •", callback_data="cmd_brand")],
-        [InlineKeyboardButton("ᴄᴀɴᴄᴇʟ", callback_data="cmd_cancel")],
+        [InlineKeyboardButton("ᴄʟᴏꜱᴇ", callback_data="cmd_cancel")],
     ])
     await query.edit_message_reply_markup(reply_markup=keyboard)
     
@@ -331,7 +331,8 @@ async def cmd_brand_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 
 async def cmd_cancel_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
-    await query.answer("❌ Cancelled!")
+    await query.answer()
+    await query.message.delete()
     
 async def cmd_anime(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     ctx.user_data.clear()

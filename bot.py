@@ -293,7 +293,7 @@ def fetch_anime(name: str) -> list[dict]:
 async def cmd_start(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     first = update.effective_user.first_name
     welcome_text = (
-        f"ʜᴇʟʟᴏ, {first}\n\n"
+        f"ʜᴇʟʟᴏ, *{first}*\n\n"
         ">ᴡᴇʟᴄᴏᴍᴇ ᴛᴏ ᴀɴɪᴍᴇғʟɪᴏ ᴘᴏsᴛᴇʀ ʙᴏᴛ\n\n"
         ">ɪ'ᴍ ʏᴏᴜʀ ᴀᴜᴛᴏ ᴛʜᴜᴍʙɴᴀɪʟ ᴍᴀᴋᴇʀ, ʀᴇᴀᴅʏ ᴛᴏ ᴄʀᴇᴀᴛᴇ sᴛᴜɴɴɪɴɢ ᴀɴɪᴍᴇ ᴅᴇsɪɢɴs ғᴏʀ ʏᴏᴜ\\."
     )

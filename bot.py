@@ -462,7 +462,10 @@ def main():
     )
 
     app.add_handler(CommandHandler("start", cmd_start))
-    app.add_handler(CallbackQueryHandler(show_commands_callback, pattern="^show_commands$"))  # ← ADD THIS
+    app.add_handler(CallbackQueryHandler(show_commands_callback, pattern="^show_commands$"))  
+    app.add_handler(CallbackQueryHandler(cmd_anime_callback, pattern="^cmd_anime$"))
+    app.add_handler(CallbackQueryHandler(cmd_brand_callback, pattern="^cmd_brand$"))
+    app.add_handler(CallbackQueryHandler(cmd_cancel_callback, pattern="^cmd_cancel$"))
     app.add_handler(anime_conv)
     app.add_handler(brand_conv)
     

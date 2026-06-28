@@ -470,11 +470,11 @@ def main():
         fallbacks=[CommandHandler("cancel", cancel)],
     )
 
-    app.add_handler(CommandHandler("start", cmd_start))
-    app.add_handler(CallbackQueryHandler(show_commands_callback, pattern="^show_commands$"))  
-    app.add_handler(CallbackQueryHandler(cmd_cancel_callback, pattern="^cmd_cancel$"))
     app.add_handler(anime_conv)
     app.add_handler(brand_conv)
+    app.add_handler(CommandHandler("start", cmd_start))
+    app.add_handler(CallbackQueryHandler(show_commands_callback, pattern="^show_commands$"))
+    app.add_handler(CallbackQueryHandler(cmd_cancel_callback, pattern="^cmd_cancel$"))
     
 
     print("🤖 Bot running...")

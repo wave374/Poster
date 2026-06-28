@@ -181,7 +181,7 @@ def build_poster(anime: dict, photo_bytes: bytes, brand: str) -> bytes:
     import re as _re
     season_match = _re.search(r'season\s*(\d+)', title_upper, flags=_re.IGNORECASE)
     if not season_match:
-    season_match = _re.search(r'\b(\d+)\b', title_upper)
+        season_match = _re.search(r'\b(\d+)\b', title_upper)
     if season_match:
     season_num = season_match.group(1)
     season_text = f"SEASON {season_num}"

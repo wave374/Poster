@@ -316,7 +316,23 @@ async def show_commands_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE)
         [InlineKeyboardButton("❌ Cancel Action", callback_data="cmd_cancel")],
     ])
     await query.edit_message_reply_markup(reply_markup=keyboard)
+    
+async def cmd_anime_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+    ctx.user_data.clear()
+    await query.message.reply_text("🔍 Enter the *anime name* you want to create a poster for:", parse_mode="Markdown")
 
+async def cmd_brand_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+    current = ctx.user_data.get("brand", BRAND_NAME)
+    await query.message.reply_text(f"🏷️ Current brand: *{current}*\n\nSend the new brand name:", parse_mode="Markdown")
+
+async def cmd_cancel_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer("❌ Cancelled!")
+    
 async def cmd_anime(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     ctx.user_data.clear()
     await update.message.reply_text(

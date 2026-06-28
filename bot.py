@@ -229,13 +229,53 @@ def build_poster(anime: dict, photo_bytes: bytes, brand: str) -> bytes:
     return out.read()
 
 # ─── JIKAN FETCH WITH RETRY + FALLBACK ───────────────────────────────────────
+# ─── ANILIST FETCH WITH JIKAN FALLBACK ───────────────────────────────────────
 def fetch_anime(name: str) -> list[dict]:
-    # Try Jikan first
+    # Try AniList first
+    try:
+        query = """
+        query ($search: String) {
+          Page(perPage: 10) {
+            media(search: $search, type: ANIME) {
+              title { english romaji }
+              genres
+              averageScore
+              episodes
+              description(asHtml: false)
+              startDate { year }
+            }
+          }
+        }
+        """
+        r = requests.post(
+            "https://graphql.anilist.co",
+            json={"query": query, "variables": {"search": name}},
+            timeout=20
+        )
+        if r.status_code == 200:
+            items = r.json()["data"]["Page"]["media"]
+            results = []
+            for item in items:
+                results.append({
+                    "title_english": item["title"].get("english") or item["title"].get("romaji"),
+                    "title": item["title"].get("romaji") or item["title"].get("english"),
+                    "genres": [{"name": g} for g in (item.get("genres") or [])],
+                    "score": round((item.get("averageScore") or 0) / 10, 1) or "N/A",
+                    "episodes": item.get("episodes") or "?",
+                    "synopsis": item.get("description") or "No synopsis available.",
+                    "year": (item.get("startDate") or {}).get("year"),
+                })
+            if results:
+                return results
+    except Exception:
+        pass
+
+    # Fallback: Jikan API
     for attempt in range(3):
         try:
             r = requests.get(
                 f"{JIKAN_API}/anime",
-                params={"q": name, "limit": 5},
+                params={"q": name, "limit": 10},
                 timeout=30,
                 headers={"User-Agent": "AnimePosterBot/1.0"}
             )
@@ -249,46 +289,7 @@ def fetch_anime(name: str) -> list[dict]:
         except Exception:
             time.sleep(3)
 
-    # Fallback: AniList GraphQL API
-    try:
-        query = """
-        query ($search: String) {
-          Page(perPage: 5) {
-            media(search: $search, type: ANIME) {
-              title { english romaji }
-              genres
-              averageScore
-              episodes
-              description(asHtml: false)
-            }
-          }
-        }
-        """
-        r = requests.post(
-            "https://graphql.anilist.co",
-            json={"query": query, "variables": {"search": name}},
-            timeout=20
-        )
-        if r.status_code == 200:
-            items = r.json()["data"]["Page"]["media"]
-            # Convert AniList format to Jikan-like format
-            results = []
-            for item in items:
-                results.append({
-                    "title_english": item["title"].get("english") or item["title"].get("romaji"),
-                    "title": item["title"].get("romaji") or item["title"].get("english"),
-                    "genres": [{"name": g} for g in (item.get("genres") or [])],
-                    "score": round((item.get("averageScore") or 0) / 10, 1) or "N/A",
-                    "episodes": item.get("episodes") or "?",
-                    "synopsis": item.get("description") or "No synopsis available.",
-                    "year": None,
-                })
-            return results
-    except Exception:
-        pass
-
     return []
-
 # ─── BOT HANDLERS ─────────────────────────────────────────────────────────────
 async def cmd_start(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     first = update.effective_user.first_name

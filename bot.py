@@ -112,10 +112,10 @@ def build_poster(anime: dict, photo_bytes: bytes, brand: str, color: str = "colo
     MHS = 115
     MHH = math.sqrt(3) * MHS
     MCOLW = MHS * 2 * 0.75
-    start_col_x = int(W * 0.30)
+    start_col_x = 420
 
     # TEXT_SAFE_X — hexes left of this are dark (no image), right show image
-    TEXT_SAFE_X = 500
+    TEXT_SAFE_X = 560
     CORNER_ACCENT_X = W - int(MCOLW * 1.5)  # last 1-2 columns get accent color
 
     m_cols = int((W - start_col_x) / MCOLW) + 3

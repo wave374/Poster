@@ -159,7 +159,7 @@ def build_poster(anime: dict, photo_bytes: bytes, brand: str) -> bytes:
         for i in range(6)
     ]
     draw.polygon(hex_pts, outline=GREEN, fill=(13, 26, 13))
-    draw.text((logo_cx, logo_cy), "H", font=load_font(20, bold=True),
+    draw.text((logo_cx, logo_cy), "A", font=load_font(20, bold=True),
               fill=GREEN, anchor="mm")
     draw.text((58, 18), brand.upper(), font=load_font(17, bold=True), fill=WHITE)
 

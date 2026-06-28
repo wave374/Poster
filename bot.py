@@ -327,8 +327,10 @@ def build_poster_cinematic(anime: dict, photo_bytes: bytes, brand: str, theme_na
         ImageDraw.Draw(pill_bg).rounded_rectangle([0, 0, pw, pill_h], radius=16, fill=pill_color)
         base.paste(pill_bg.convert("RGB"), (gx, gy), pmask)
         draw = ImageDraw.Draw(base)
-        draw.rounded_rectangle([gx, gy, gx + pw, gy + pill_h], radius=16, outline=ACCENT, width=1)
-        draw.text((gx + pw // 2, gy + pill_h // 2), g.upper(), font=f_genre, fill=WHITE, anchor="mm")
+        GENRE_COLORS = [(255,100,100),(0,210,200),(100,180,255),(180,100,255),(255,180,50),(100,255,150)]
+        gc = GENRE_COLORS[genres.index(g) % len(GENRE_COLORS)]
+        draw.rounded_rectangle([gx, gy, gx + pw, gy + pill_h], radius=16, outline=gc, width=2)
+        draw.text((gx + pw // 2, gy + pill_h // 2), g.upper(), font=f_genre, fill=gc, anchor="mm")
         gx += pw + 10
 
     # Glass description card

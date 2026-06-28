@@ -270,7 +270,7 @@ def build_poster_cinematic(anime: dict, photo_bytes: bytes, brand: str, theme_na
     # Title
     title_upper = clean_title.upper()
     ty = by2 + 32
-    f_title = load_font(108, bold=True)
+    f_title = load_font(86, bold=True)
     max_title_w = int(W * 0.52)
     while f_title.size > 32:
         bbox = draw.textbbox((0, 0), title_upper, font=f_title)

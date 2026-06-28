@@ -177,18 +177,17 @@ def build_poster(anime: dict, photo_bytes: bytes, brand: str) -> bytes:
     draw.text((38, ty), title_upper, font=f_title, fill=WHITE)
     title_bottom = draw.textbbox((38, ty), title_upper, font=f_title)[3]
 
-    # ── Step 6: Subtitle (green, slightly smaller) ──
-    subtitle = title_jp if (title_jp and title_jp.upper() != title_upper) else ""
-    if subtitle:
-        f_sub = load_font(int(f_title.size * 0.92), bold=True)
-        while f_sub.size > 36:
-            bbox = draw.textbbox((0, 0), subtitle.upper(), font=f_sub)
-            if (bbox[2] - bbox[0]) <= max_w:
-                break
-            f_sub = load_font(f_sub.size - 4, bold=True)
-        draw.text((38, title_bottom + 2), subtitle.upper(), font=f_sub, fill=GREEN)
-        title_bottom = draw.textbbox((38, title_bottom + 2),
-                                      subtitle.upper(), font=f_sub)[3]
+   # ── Step 6: Season number in green ──
+    import re as _re
+    season_match = _re.search(r'season\s*(\d+)', title_upper, flags=_re.IGNORECASE)
+    if not season_match:
+    season_match = _re.search(r'\b(\d+)\b', title_upper)
+    if season_match:
+    season_num = season_match.group(1)
+    season_text = f"SEASON {season_num}"
+    title_upper = _re.sub(r'\s*season\s*\d+|\s*\b' + season_num + r'\b', '', title_upper, flags=_re.IGNORECASE).strip()
+    draw.text((38, title_bottom + 2), season_text, font=load_font(int(f_title.size * 0.6), bold=True), fill=GREEN)
+    title_bottom = draw.textbbox((38, title_bottom + 2), season_text, font=load_font(int(f_title.size * 0.6), bold=True))[3]
 
     # ── Step 7: Genre tags ──
     gy = title_bottom + 20

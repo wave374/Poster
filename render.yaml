@@ -1,5 +1,5 @@
 services:
-  - type: worker
+  -     type: background_worker
     name: anime-poster-bot
     runtime: python
     buildCommand: |

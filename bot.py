@@ -321,14 +321,16 @@ async def cmd_anime_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
     ctx.user_data.clear()
+    ctx.user_data["conv_state"] = ASK_ANIME
     await query.message.reply_text("🔍 Enter the *anime name* you want to create a poster for:", parse_mode="Markdown")
 
 async def cmd_brand_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
     current = ctx.user_data.get("brand", BRAND_NAME)
+    ctx.user_data["conv_state"] = ASK_BRAND
     await query.message.reply_text(f"🏷️ Current brand: *{current}*\n\nSend the new brand name:", parse_mode="Markdown")
-
+    
 async def cmd_cancel_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()

@@ -366,7 +366,7 @@ async def received_anime_name(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             f"{a.get('title_english') or a['title']} ({a.get('year') or '?'})",
             callback_data=str(i)
         )]
-        for i, a in enumerate(results[:5])
+        for i, a in enumerate(results[:10])
     ]
     buttons.append([InlineKeyboardButton("❌ Cancel", callback_data="cancel")])
     await update.message.reply_text(

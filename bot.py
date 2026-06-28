@@ -311,9 +311,9 @@ async def show_commands_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE)
     query = update.callback_query
     await query.answer()
     keyboard = InlineKeyboardMarkup([
-        [InlineKeyboardButton("🎌 Create Poster", callback_data="cmd_anime")],
-        [InlineKeyboardButton("🏷️ Change Brand", callback_data="cmd_brand")],
-        [InlineKeyboardButton("❌ Cancel Action", callback_data="cmd_cancel")],
+        [InlineKeyboardButton("• ᴄʀᴇᴀᴛᴇ ᴘᴏꜱᴛᴇʀ •", callback_data="cmd_anime")],
+        [InlineKeyboardButton("• ᴄʜᴀɴɢᴇ ʙʀᴀɴᴅ •", callback_data="cmd_brand")],
+        [InlineKeyboardButton("ᴄᴀɴᴄᴇʟ", callback_data="cmd_cancel")],
     ])
     await query.edit_message_reply_markup(reply_markup=keyboard)
     

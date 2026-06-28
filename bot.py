@@ -299,7 +299,7 @@ async def cmd_start(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     )
     keyboard = InlineKeyboardMarkup([
         [InlineKeyboardButton("• ᴍʏ ᴀʟʟ ᴄᴏᴍᴍᴀɴᴅꜱ •", callback_data="show_commands")],
-        [InlineKeyboardButton("• ᴅᴇᴠᴇʟᴏᴘᴇʀ", url="https://t.me/Wave_189"), InlineKeyboardButton("ᴄʟᴏꜱᴇ •", callback_data="cmd_cancel")],
+        [InlineKeyboardButton("• ᴅᴇᴠᴇʟᴏᴘᴇʀ", callback_data="developer"), InlineKeyboardButton("ᴄʟᴏꜱᴇ •", callback_data="cmd_cancel")],
     ])
     await update.message.reply_photo(
         photo="https://i.postimg.cc/RF6b28py/e25348fdc52abcafa9e951f6a3d1a51a.jpg",
@@ -337,6 +337,33 @@ async def cmd_cancel_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     await query.answer()
     await query.message.delete()
     
+async def developer_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+    dev_text = (
+        "*Developer Info*\n\n"
+        "» Creator: @WAVE_189\n"
+        "» Support: @WAVE_DOMAIN"
+    )
+    keyboard = InlineKeyboardMarkup([
+        [InlineKeyboardButton("ʙᴀᴄᴋ", callback_data="back_start"), InlineKeyboardButton("ᴄʟᴏꜱᴇ", callback_data="cmd_cancel")],
+    ])
+    await query.edit_message_caption(caption=dev_text, parse_mode="Markdown", reply_markup=keyboard)
+
+async def back_start_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+    first = update.effective_user.first_name
+    welcome_text = (
+        f"*ʜᴇʟʟᴏ, {first}*\n\n"
+        ">ᴡᴇʟᴄᴏᴍᴇ ᴛᴏ ᴀɴɪᴍᴇғʟɪᴏ ᴘᴏsᴛᴇʀ ʙᴏᴛ\n\n"
+        ">ɪ'ᴍ ʏᴏᴜʀ ᴀᴜᴛᴏ ᴛʜᴜᴍʙɴᴀɪʟ ᴍᴀᴋᴇʀ, ʀᴇᴀᴅʏ ᴛᴏ ᴄʀᴇᴀᴛᴇ sᴛᴜɴɴɪɴɢ ᴀɴɪᴍᴇ ᴅᴇsɪɢɴs ғᴏʀ ʏᴏᴜ\\."
+    )
+    keyboard = InlineKeyboardMarkup([
+        [InlineKeyboardButton("• ᴍʏ ᴀʟʟ ᴄᴏᴍᴍᴀɴᴅꜱ •", callback_data="show_commands")],
+        [InlineKeyboardButton("• ᴅᴇᴠᴇʟᴏᴘᴇʀ", callback_data="developer"), InlineKeyboardButton("ᴄʟᴏꜱᴇ •", callback_data="cmd_cancel")],
+    ])
+    await query.edit_message_caption(caption=welcome_text, parse_mode="MarkdownV2", reply_markup=keyboard)    
 async def cmd_anime(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     ctx.user_data.clear()
     await update.message.reply_text(
@@ -476,7 +503,8 @@ def main():
     app.add_handler(CommandHandler("start", cmd_start))
     app.add_handler(CallbackQueryHandler(show_commands_callback, pattern="^show_commands$"))
     app.add_handler(CallbackQueryHandler(cmd_cancel_callback, pattern="^cmd_cancel$"))
-    
+    app.add_handler(CallbackQueryHandler(developer_callback, pattern="^developer$"))
+    app.add_handler(CallbackQueryHandler(back_start_callback, pattern="^back_start$"))
 
     print("🤖 Bot running...")
     app.run_polling()

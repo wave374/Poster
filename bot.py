@@ -310,13 +310,12 @@ async def cmd_start(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 async def show_commands_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
-    await query.message.reply_text(
-        "📋 *Available Commands*\n\n"
-        "🎌 /anime — Create a poster\n"
-        "🏷️ /brand — Change brand name\n"
-        "❌ /cancel — Cancel current action",
-        parse_mode="Markdown"
-    )
+    keyboard = InlineKeyboardMarkup([
+        [InlineKeyboardButton("🎌 Create Poster", callback_data="cmd_anime")],
+        [InlineKeyboardButton("🏷️ Change Brand", callback_data="cmd_brand")],
+        [InlineKeyboardButton("❌ Cancel Action", callback_data="cmd_cancel")],
+    ])
+    await query.edit_message_reply_markup(reply_markup=keyboard)
 
 async def cmd_anime(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     ctx.user_data.clear()

@@ -244,30 +244,6 @@ def build_poster(anime: dict, photo_bytes: bytes, brand: str, theme_name: str = 
     if len(wrapped) > 5:
         draw.text((card_x + 20, sy), "...read more", font=f_syn, fill=ACCENT)
 
-    # Frosted glass: blur region behind card, then overlay semi-transparent layer
-    region = base.crop((card_x, card_y, card_x + card_w, card_y + card_h))
-    blurred_r = region.filter(ImageFilter.GaussianBlur(12))
-    cmask = Image.new("L", (card_w, card_h), 0)
-    ImageDraw.Draw(cmask).rounded_rectangle([0, 0, card_w, card_h], radius=16, fill=255)
-    # Glass tint
-    glass_tint = Image.new("RGBA", (card_w, card_h), (255, 255, 255, 18))
-    blurred_r.paste(glass_tint.convert("RGB"), (0, 0), cmask)
-    base.paste(blurred_r, (card_x, card_y), cmask)
-    draw = ImageDraw.Draw(base)
-    # Thin border
-    draw.rounded_rectangle([card_x, card_y, card_x + card_w, card_y + card_h],
-                           radius=16, outline=(255, 255, 255, 28), width=1)
-
-    # Synopsis text (higher contrast)
-    f_syn = load_font(14)
-    wrapped = textwrap.wrap(syn_clean, width=66)
-    sy = card_y + 20
-    text_color = tuple(min(255, 160 + c // 3) for c in ACCENT)
-    for line in wrapped[:5]:
-        draw.text((card_x + 20, sy), line, font=f_syn, fill=text_color)
-        sy += 22
-    if len(wrapped) > 5:
-        draw.text((card_x + 20, sy), "...read more", font=f_syn, fill=ACCENT)
 
     # ── METADATA ROW ── (Description → Metadata = 48px)
     meta_y = H - 72

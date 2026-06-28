@@ -28,7 +28,7 @@ _server = HTTPServer(("0.0.0.0", _port), _Handler)
 threading.Thread(target=_server.serve_forever, daemon=True).start()
 print(f"Dummy server listening on port {_port}")
 
-# ─── CONFIG ───────────────────────────────────────────────────────────────────
+# ─── CONFIG ────────────────────────────────────────────────────────────
 BOT_TOKEN  = "8620146968:AAF3VOvjFFqgWCWIYS5Od_keB3BMZbJbk_w"
 BRAND_NAME = "ANIMEFLIO"
 JIKAN_API  = "https://api.jikan.moe/v4"
@@ -36,7 +36,7 @@ JIKAN_API  = "https://api.jikan.moe/v4"
 # Conversation states
 ASK_ANIME, ASK_CONFIRM, ASK_PHOTO, ASK_BRAND = range(4)
 
-# ─── COLORS ───────────────────────────────────────────────────────────────────
+# ─── COLORS ────────────────────────────────────────────────────────────
 BG_DARK = (13, 26, 13)
 GREEN   = (34, 197, 94)
 GOLD    = (212, 168, 85)
@@ -46,7 +46,7 @@ BLACK   = (0, 0, 0)
 
 W, H = 1280, 720  # 16:9
 
-# ─── FONT LOADER ──────────────────────────────────────────────────────────────
+# ─── FONT LOADER ───────────────────────────────────────────────────────
 def load_font(size, bold=False):
     candidates = (
         ["/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
@@ -62,8 +62,9 @@ def load_font(size, bold=False):
             return ImageFont.truetype(path, size)
     return ImageFont.load_default()
 
-# ─── HEX GRID ─────────────────────────────────────────────────────────────────
-def draw_hex_grid(draw, width, height):
+# ─── HEX GRID ──────────────────────────────────────────────────────────
+def draw_hex_grid_styled(draw, width, height, outline_color=GOLD):
+    """Draw hexagonal grid with bold outline colors"""
     hex_size = 55
     hex_w = hex_size * 2
     hex_h = math.sqrt(3) * hex_size
@@ -79,9 +80,9 @@ def draw_hex_grid(draw, width, height):
                  cy + hex_size * math.sin(math.radians(60 * i)))
                 for i in range(6)
             ]
-            draw.polygon(points, outline=(30, 55, 30), fill=(13, 22, 13))
+            draw.polygon(points, outline=outline_color, fill=(13, 22, 13), width=2)
 
-# ─── GRADIENT OVERLAY ─────────────────────────────────────────────────────────
+# ─── GRADIENT OVERLAY ─────────────────────────────────────────────────────
 def apply_left_gradient(img):
     grad = Image.new("RGBA", img.size, (0, 0, 0, 0))
     draw = ImageDraw.Draw(grad)
@@ -93,44 +94,44 @@ def apply_left_gradient(img):
     img.alpha_composite(grad)
     return img.convert("RGB")
 
-# ─── POSTER BUILDER ───────────────────────────────────────────────────────────
+# ─── POSTER BUILDER ────────────────────────────────────────────────────────
 def build_poster(anime: dict, photo_bytes: bytes, brand: str) -> bytes:
     title    = anime.get("title_english") or anime.get("title", "UNKNOWN")
     title_jp = anime.get("title", "")
     genres   = [g["name"].upper() for g in anime.get("genres", [])][:3]
     synopsis = anime.get("synopsis") or "No synopsis available."
 
-    # ── Step 1: Full dark hex grid background ──
+    # ── Step 1: Full dark hex grid background with colored outlines ──
     base = Image.new("RGB", (W, H), BG_DARK)
-    draw_hex_grid(ImageDraw.Draw(base), W, H)
+    draw_base = ImageDraw.Draw(base)
+    draw_hex_grid_styled(draw_base, W, H, outline_color=GOLD)
 
-    # ── Step 2: Place photo on RIGHT half with strong diagonal fade ──
+    # ── Step 2: Place photo on RIGHT half (NO fade, sharp edge) ──
     char_img = Image.open(io.BytesIO(photo_bytes)).convert("RGBA")
-    # Resize to fill right 60% of poster height
-    char_w = int(W * 0.62)
+    
+    # Calculate dimensions
+    char_w = int(W * 0.55)  # Right 55% for character
     scale  = H / char_img.height
     new_w  = int(char_img.width * scale)
     char_img = char_img.resize((new_w, H), Image.LANCZOS)
-    # Crop to fit
+    
+    # Crop/pad to exact width
     if new_w > char_w:
         char_img = char_img.crop(((new_w - char_w) // 2, 0,
                                    (new_w - char_w) // 2 + char_w, H))
     elif new_w < char_w:
-        # pad if too narrow
         padded = Image.new("RGBA", (char_w, H), (0, 0, 0, 0))
         padded.paste(char_img, ((char_w - new_w) // 2, 0))
         char_img = padded
 
-    # Apply strong left-to-right fade mask on the photo itself
-    fade_mask = Image.new("L", (char_w, H), 0)
+    # Apply fade only on LEFT edge of character (facing text area)
+    fade_mask = Image.new("L", (char_w, H), 255)
     fm_draw   = ImageDraw.Draw(fade_mask)
-    fade_zone = int(char_w * 0.55)
-    for x in range(char_w):
-        if x < fade_zone:
-            alpha = int(255 * ((x / fade_zone) ** 2.2))
-        else:
-            alpha = 255
+    fade_zone = int(char_w * 0.25)  # Fade zone is 25% from left edge
+    for x in range(fade_zone):
+        alpha = int(255 * (x / fade_zone) ** 1.8)
         fm_draw.line([(x, 0), (x, H)], fill=alpha)
+    
     char_rgba = char_img.copy().convert("RGBA")
     r, g, b, a = char_rgba.split()
     a = Image.composite(a, Image.new("L", a.size, 0), fade_mask)
@@ -142,31 +143,36 @@ def build_poster(anime: dict, photo_bytes: bytes, brand: str) -> bytes:
 
     draw = ImageDraw.Draw(base)
 
-    # ── Step 3: Dark overlay on left 45% to ensure text contrast ──
+    # ── Step 3: Vertical divider line (sharp separation) ──
+    divider_x = W - char_w
+    draw.line([(divider_x, 0), (divider_x, H)], fill=GOLD, width=3)
+
+    # ── Step 4: Dark overlay on left side (text area) ──
     overlay = Image.new("RGBA", (W, H), (0, 0, 0, 0))
     ov_draw  = ImageDraw.Draw(overlay)
-    for x in range(int(W * 0.52)):
-        alpha = int(180 * (1 - x / (W * 0.52)) ** 0.5)
+    text_area_w = divider_x
+    for x in range(text_area_w):
+        alpha = int(200 * (1 - (x / text_area_w) ** 0.6))
         ov_draw.line([(x, 0), (x, H)], fill=(10, 20, 10, alpha))
     base = Image.alpha_composite(base.convert("RGBA"), overlay).convert("RGB")
     draw = ImageDraw.Draw(base)
 
-    # ── Step 4: Brand logo top-left ──
+    # ── Step 5: Brand logo top-left ──
     logo_cx, logo_cy, logo_r = 30, 30, 20
     hex_pts = [
         (logo_cx + logo_r * math.cos(math.radians(60 * i - 30)),
          logo_cy + logo_r * math.sin(math.radians(60 * i - 30)))
         for i in range(6)
     ]
-    draw.polygon(hex_pts, outline=GREEN, fill=(13, 26, 13))
+    draw.polygon(hex_pts, outline=GOLD, fill=(13, 26, 13), width=2)
     draw.text((logo_cx, logo_cy), "A", font=load_font(20, bold=True),
-              fill=GREEN, anchor="mm")
+              fill=GOLD, anchor="mm")
     draw.text((58, 18), brand.upper(), font=load_font(17, bold=True), fill=WHITE)
 
-    # ── Step 5: Title (white, large) ──
+    # ── Step 6: Title (white, large) ──
     title_upper = title.upper()
     f_title = load_font(96, bold=True)
-    max_w   = int(W * 0.48)
+    max_w   = int(divider_x * 0.85)
     while f_title.size > 40:
         bbox = draw.textbbox((0, 0), title_upper, font=f_title)
         if (bbox[2] - bbox[0]) <= max_w:
@@ -177,19 +183,18 @@ def build_poster(anime: dict, photo_bytes: bytes, brand: str) -> bytes:
     draw.text((38, ty), title_upper, font=f_title, fill=WHITE)
     title_bottom = draw.textbbox((38, ty), title_upper, font=f_title)[3]
 
-   # ── Step 6: Season number in green ──
-    import re as _re
-    season_match = _re.search(r'season\s*(\d+)', title_upper, flags=_re.IGNORECASE)
+    # ── Step 7: Season number in gold ──
+    season_match = re.search(r'season\s*(\d+)', title_upper, flags=re.IGNORECASE)
     if not season_match:
-        season_match = _re.search(r'\s+(\d+)$', title_upper)
+        season_match = re.search(r'\s+(\d+)$', title_upper)
     if season_match:
         season_num = season_match.group(1)
         season_text = f"SEASON {season_num}"
-        title_upper = _re.sub(r'\s*season\s*\d+|\s*\b' + season_num + r'\b', '', title_upper, flags=_re.IGNORECASE).strip()
-        draw.text((38, title_bottom + 2), season_text, font=load_font(int(f_title.size * 0.6), bold=True), fill=GREEN)
+        title_upper = re.sub(r'\s*season\s*\d+|\s*\b' + season_num + r'\b', '', title_upper, flags=re.IGNORECASE).strip()
+        draw.text((38, title_bottom + 2), season_text, font=load_font(int(f_title.size * 0.6), bold=True), fill=GOLD)
         title_bottom = draw.textbbox((38, title_bottom + 2), season_text, font=load_font(int(f_title.size * 0.6), bold=True))[3]
 
-    # ── Step 7: Genre tags ──
+    # ── Step 8: Genre tags ──
     gy = title_bottom + 20
     gx = 38
     f_genre = load_font(16, bold=True)
@@ -197,7 +202,7 @@ def build_poster(anime: dict, photo_bytes: bytes, brand: str) -> bytes:
         draw.text((gx, gy), g, font=f_genre, fill=GOLD)
         gx += draw.textbbox((0, 0), g, font=f_genre)[2] + 28
 
-    # ── Step 8: Synopsis (italic style, wrap tight) ──
+    # ── Step 9: Synopsis ──
     f_syn     = load_font(15)
     syn_clean = re.sub(r'\[.*?\]|\(.*?\)', '', synopsis).strip()
     wrapped   = textwrap.wrap(syn_clean, width=48)
@@ -207,17 +212,17 @@ def build_poster(anime: dict, photo_bytes: bytes, brand: str) -> bytes:
         draw.text((38, sy), line, font=f_syn, fill=GRAY)
         sy += 24
     if len(wrapped) > max_lines:
-        draw.text((38, sy), "...read more", font=f_syn, fill=GREEN)
+        draw.text((38, sy), "...read more", font=f_syn, fill=GOLD)
         sy += 24
 
-    # ── Step 9: CTA buttons ──
+    # ── Step 10: CTA buttons ──
     btn_y = sy + 18
     f_btn = load_font(16, bold=True)
     for i, label in enumerate(["DOWNLOAD", "JOIN NOW"]):
         bx = 38 + i * 220
         bw, bh = 195, 48
         draw.rounded_rectangle([bx, btn_y, bx + bw, btn_y + bh],
-                                radius=5, fill=GREEN)
+                                radius=5, fill=GOLD)
         tw = draw.textbbox((0, 0), label, font=f_btn)[2]
         draw.text((bx + (bw - tw) // 2, btn_y + 14),
                   label, font=f_btn, fill=BLACK)
@@ -227,8 +232,8 @@ def build_poster(anime: dict, photo_bytes: bytes, brand: str) -> bytes:
     out.seek(0)
     return out.read()
 
-# ─── JIKAN FETCH WITH RETRY + FALLBACK ───────────────────────────────────────
-# ─── ANILIST FETCH WITH JIKAN FALLBACK ───────────────────────────────────────
+# ──�� JIKAN FETCH WITH RETRY + FALLBACK ─────────────────────────────────────
+# ─── ANILIST FETCH WITH JIKAN FALLBACK ─────────────────────────────────────
 def fetch_anime(name: str) -> list[dict]:
     # Try AniList first
     try:
@@ -289,7 +294,7 @@ def fetch_anime(name: str) -> list[dict]:
             time.sleep(3)
 
     return []
-# ─── BOT HANDLERS ─────────────────────────────────────────────────────────────
+# ─── BOT HANDLERS ──────────────────────────────────────────────────────────
 async def cmd_start(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     first = update.effective_user.first_name
     welcome_text = (
@@ -357,7 +362,7 @@ async def back_start_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     first = update.effective_user.first_name
     welcome_text = (
         f"*ʜᴇʟʟᴏ, {first}*\n\n"
-        ">ᴡᴇʟᴄᴏᴍᴇ ᴛᴏ ᴀɴɪᴍᴇғʟɪᴏ ᴘᴏsᴛᴇʀ ʙᴏᴛ\n\n"
+        ">ᴡᴇʟᴄᴏᴍᴇ ᴛᴏ ᴀɴɪᴍᴇғʟɪ��� ᴘᴏsᴛᴇʀ ʙᴏᴛ\n\n"
         ">ɪ'ᴍ ʏᴏᴜʀ ᴀᴜᴛᴏ ᴛʜᴜᴍʙɴᴀɪʟ ᴍᴀᴋᴇʀ, ʀᴇᴀᴅʏ ᴛᴏ ᴄʀᴇᴀᴛᴇ sᴛᴜɴɴɪɴɢ ᴀɴɪᴍᴇ ᴅᴇsɪɢɴs ғᴏʀ ʏᴏᴜ\\."
     )
     keyboard = InlineKeyboardMarkup([
@@ -469,7 +474,7 @@ async def cancel(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("❌ Cancelled.")
     return ConversationHandler.END
 
-# ─── MAIN ─────────────────────────────────────────────────────────────────────
+# ─── MAIN ─────────────────────────────────────────────────────────────
 def main():
     app = Application.builder().token(BOT_TOKEN).build()
 

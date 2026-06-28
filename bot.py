@@ -298,10 +298,10 @@ async def cmd_start(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         "◇ Use the button below to see all commands."
     )
     keyboard = InlineKeyboardMarkup([
-        [InlineKeyboardButton("📋 View All Commands", callback_data="show_commands")],
+        [InlineKeyboardButton("• ᴍʏ ᴀʟʟ ᴄᴏᴍᴍᴀɴᴅꜱ •", callback_data="show_commands")],
     ])
     await update.message.reply_photo(
-        photo="YOUR_IMAGE_URL_HERE",
+        photo="https://i.postimg.cc/RF6b28py/e25348fdc52abcafa9e951f6a3d1a51a.jpg",
         caption=welcome_text,
         parse_mode="Markdown",
         reply_markup=keyboard

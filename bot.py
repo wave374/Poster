@@ -291,9 +291,30 @@ def fetch_anime(name: str) -> list[dict]:
 
 # ─── BOT HANDLERS ─────────────────────────────────────────────────────────────
 async def cmd_start(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text(
-        "🎌 *Anime Poster Bot*\n\nSend /anime to create a custom 16:9 poster!\n"
-        "Send /brand to change the brand name.",
+    welcome_text = (
+        "✦ *HEY THERE!* ✦\n\n"
+        "◇ I'm your friendly *Animeflio* assistant.\n"
+        "◇ I can help you create awesome posters for your favorite anime!\n"
+        "◇ Use the button below to see all commands."
+    )
+    keyboard = InlineKeyboardMarkup([
+        [InlineKeyboardButton("📋 View All Commands", callback_data="show_commands")],
+    ])
+    await update.message.reply_photo(
+        photo="YOUR_IMAGE_URL_HERE",
+        caption=welcome_text,
+        parse_mode="Markdown",
+        reply_markup=keyboard
+    )
+
+async def show_commands_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+    await query.message.reply_text(
+        "📋 *Available Commands*\n\n"
+        "🎌 /anime — Create a poster\n"
+        "🏷️ /brand — Change brand name\n"
+        "❌ /cancel — Cancel current action",
         parse_mode="Markdown"
     )
 

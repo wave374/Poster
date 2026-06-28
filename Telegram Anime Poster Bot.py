@@ -41,8 +41,8 @@ from telegram.ext import (
 )
 
 # ─── CONFIG ───────────────────────────────────────────────────────────────────
-BOT_TOKEN   = "YOUR_BOT_TOKEN_HERE"
-BRAND_NAME  = "HELLFIRE ACADEMY"
+BOT_TOKEN   = "8620146968:AAF3VOvjFFqgWCWIYS5Od_keB3BMZbJbk_w"
+BRAND_NAME  = "ANIMEFLIO"
 JIKAN_API   = "https://api.jikan.moe/v4"
 
 # Conversation states

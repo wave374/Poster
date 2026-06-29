@@ -819,9 +819,10 @@ async def received_photo(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         "🖼️ Choose your *poster style*:",
         parse_mode="Markdown",
         reply_markup=InlineKeyboardMarkup([
-            [InlineKeyboardButton("🎴 Style 1 — Classic Hex", callback_data="style_hex")],
-            [InlineKeyboardButton("🎬 Style 2 — Cinematic", callback_data="style_cinematic")],
-        ])
+            [InlineKeyboardButton("🎴 Style 1 — Classic Hex",  callback_data="style_hex")],
+            [InlineKeyboardButton("🎬 Style 2 — Cinematic",    callback_data="style_cinematic")],
+            [InlineKeyboardButton("🖥️ Style 3 — Modern UI",   callback_data="style_modern")],
+       ])
     )
     return ASK_STYLE
 

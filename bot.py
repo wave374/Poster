@@ -650,7 +650,7 @@ async def cmd_start(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     ])
     await update.message.reply_photo(
         photo="https://i.postimg.cc/RF6b28py/e25348fdc52abcafa9e951f6a3d1a51a.jpg",
-        caption=welcome_text, parse_mode="MarkdownV2", reply_markup=keyboard
+        caption=welcome_text, parse_mode="MarkdownV2", reply_markup=keyboard,
         message_effect_id="5104841245755180586"
     )
 

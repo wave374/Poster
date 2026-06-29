@@ -29,7 +29,7 @@ threading.Thread(target=_server.serve_forever, daemon=True).start()
 print(f"Dummy server listening on port {_port}")
 
 # ─── CONFIG ───────────────────────────────────────────────────────────────────
-BOT_TOKEN  = "YOUR_BOT_TOKEN_HERE"
+BOT_TOKEN  = "8955163269:AAHuq5mCGQZlPaoDdiTJAtBSFeelgz74sAU"
 BRAND_NAME = "ANIMEFLIO"
 JIKAN_API  = "https://api.jikan.moe/v4"
 
@@ -651,6 +651,7 @@ async def cmd_start(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_photo(
         photo="https://i.postimg.cc/RF6b28py/e25348fdc52abcafa9e951f6a3d1a51a.jpg",
         caption=welcome_text, parse_mode="MarkdownV2", reply_markup=keyboard
+        message_effect_id="5104841245755180586"
     )
 
 async def show_commands_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):

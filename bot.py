@@ -33,7 +33,7 @@ print(f"Dummy server listening on port {_port}")
 BOT_TOKEN  = "8955163269:AAHuq5mCGQZlPaoDdiTJAtBSFeelgz74sAU"
 BRAND_NAME = "ANIMEFLIO"
 JIKAN_API  = "https://api.jikan.moe/v4"
-OWNER_ID   = 123456789  # Replace with your Telegram user ID
+OWNER_ID   = 7115720502  # Replace with your Telegram user ID
 USERS_FILE = "users.json"
 
 ASK_ANIME, ASK_CONFIRM, ASK_PHOTO, ASK_STYLE, ASK_COLOR, ASK_BRAND = range(6)

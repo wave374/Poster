@@ -431,6 +431,205 @@ def build_poster_cinematic(anime: dict, photo_bytes: bytes, brand: str, theme_na
     out.seek(0)
     return out.read()
 
+# ═══════════════════════════════════════════════════════════════════════════════
+# POSTER STYLE 3 — Modern UI (like the reference images)
+# ═══════════════════════════════════════════════════════════════════════════════
+def build_poster_modern(anime: dict, photo_bytes: bytes, brand: str, theme_name: str = "purple") -> bytes:
+    theme  = THEMES.get(theme_name, THEMES["purple"])
+    ACCENT = theme["accent"]
+
+    title    = anime.get("title_english") or anime.get("title", "UNKNOWN")
+    genres   = [g["name"] for g in anime.get("genres", [])][:3]
+    synopsis = anime.get("synopsis") or "No synopsis available."
+    score    = str(anime.get("score") or "N/A")
+    episodes = str(anime.get("episodes") or "?")
+    studio   = str(anime.get("studio") or "Unknown")
+    clean_title, season_text = extract_season(title)
+
+    syn_clean = re.sub(r'<[^>]+>', '', synopsis)
+    syn_clean = re.sub(r'\[.*?\]|\(.*?\)', '', syn_clean).strip()
+
+    # ── Background: blurred photo, heavily darkened ──
+    bg = Image.open(io.BytesIO(photo_bytes)).convert("RGB")
+    bg = bg.resize((W, H), Image.LANCZOS)
+    bg_blur = bg.filter(ImageFilter.GaussianBlur(28))
+    dark = Image.new("RGB", (W, H), (10, 8, 18))
+    base = Image.blend(bg_blur, dark, 0.72)
+
+    # Subtle vignette
+    vig = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+    vd  = ImageDraw.Draw(vig)
+    for i in range(80):
+        a = int(120 * (i / 80) ** 2)
+        vd.rectangle([i, i, W-i, H-i], outline=(0, 0, 0, 255-a))
+    base = Image.alpha_composite(base.convert("RGBA"), vig).convert("RGB")
+    draw = ImageDraw.Draw(base)
+
+    LEFT = 72
+    TOP  = 148  # start lower so brand badge + title have breathing room
+
+    # ── Brand badge (pill shape) ──
+    badge_text = f"✦ {brand.upper()}"
+    f_badge = load_font(13, bold=True)
+    btw = draw.textbbox((0, 0), badge_text, font=f_badge)[2]
+    bw, bh = btw + 32, 34
+    bx, by = LEFT, 100
+    # filled pill
+    badge_bg = Image.new("RGBA", (bw, bh), (0,0,0,0))
+    bmask = Image.new("L", (bw, bh), 0)
+    ImageDraw.Draw(bmask).rounded_rectangle([0,0,bw,bh], radius=bh//2, fill=255)
+    ImageDraw.Draw(badge_bg).rounded_rectangle([0,0,bw,bh], radius=bh//2,
+                                                fill=(ACCENT[0], ACCENT[1], ACCENT[2]))
+    base.paste(badge_bg.convert("RGB"), (bx, by), bmask)
+    draw = ImageDraw.Draw(base)
+    draw.text((bx + 16, by + bh//2), badge_text, font=f_badge, fill=WHITE, anchor="lm")
+
+    # ── Main title ──
+    display_title = clean_title.upper()
+    if season_text:
+        display_title = f"{clean_title.upper()} {season_text}"
+
+    f_title = load_font(80, bold=True)
+    max_title_w = int(W * 0.56)
+    while f_title.size > 36:
+        bbox = draw.textbbox((0, 0), display_title, font=f_title)
+        if (bbox[2] - bbox[0]) <= max_title_w:
+            break
+        f_title = load_font(f_title.size - 4, bold=True)
+
+    # word wrap
+    words = display_title.split()
+    lines, cur = [], []
+    for word in words:
+        test = " ".join(cur + [word])
+        if draw.textbbox((0,0), test, font=f_title)[2] <= max_title_w:
+            cur.append(word)
+        else:
+            if cur: lines.append(" ".join(cur))
+            cur = [word]
+    if cur: lines.append(" ".join(cur))
+
+    ty = by + bh + 22
+    line_h = int(f_title.size * 1.1)
+    for line in lines[:2]:
+        draw.text((LEFT, ty), line, font=f_title, fill=WHITE)
+        ty += line_h
+    title_bottom = ty
+
+    # ── Synopsis card with left accent bar ──
+    card_x  = LEFT
+    card_y  = title_bottom + 20
+    card_w  = int(W * 0.50)
+    card_h  = 110
+    bar_w   = 4
+
+    # glass card
+    region = base.crop((card_x, card_y, card_x + card_w, card_y + card_h))
+    region = region.filter(ImageFilter.GaussianBlur(12))
+    cmask  = Image.new("L", (card_w, card_h), 0)
+    ImageDraw.Draw(cmask).rounded_rectangle([0,0,card_w,card_h], radius=12, fill=255)
+    base.paste(region, (card_x, card_y), cmask)
+    # dark tint
+    tint = Image.new("RGB", (card_w, card_h), (15, 12, 28))
+    base.paste(tint, (card_x, card_y),
+               Image.composite(Image.new("L",(card_w,card_h),140),
+                                Image.new("L",(card_w,card_h),0), cmask))
+    draw = ImageDraw.Draw(base)
+
+    # left accent bar
+    draw.rounded_rectangle([card_x, card_y, card_x + bar_w, card_y + card_h],
+                           radius=2, fill=ACCENT)
+
+    # synopsis text
+    f_syn = load_font(14)
+    wrapped = textwrap.wrap(syn_clean, width=62)
+    sy = card_y + 14
+    for line in wrapped[:4]:
+        draw.text((card_x + bar_w + 16, sy), line, font=f_syn, fill=(210, 210, 220))
+        sy += 23
+    if len(wrapped) > 4:
+        draw.text((card_x + bar_w + 16, sy), "...", font=f_syn, fill=ACCENT)
+
+    # ── Genre pills ──
+    gy = card_y + card_h + 22
+    gx = LEFT
+    f_genre = load_font(12, bold=True)
+    pill_h  = 30
+    for g in genres:
+        gtw = draw.textbbox((0,0), g.upper(), font=f_genre)[2]
+        pw  = gtw + 24
+        # dark filled pill with accent outline
+        pmask = Image.new("L", (pw, pill_h), 0)
+        ImageDraw.Draw(pmask).rounded_rectangle([0,0,pw,pill_h], radius=pill_h//2, fill=255)
+        pill_bg = Image.new("RGB", (pw, pill_h), (25, 20, 40))
+        base.paste(pill_bg, (gx, gy), pmask)
+        draw = ImageDraw.Draw(base)
+        draw.rounded_rectangle([gx, gy, gx+pw, gy+pill_h],
+                               radius=pill_h//2, outline=ACCENT, width=2)
+        draw.text((gx + pw//2, gy + pill_h//2), g.upper(),
+                  font=f_genre, fill=WHITE, anchor="mm")
+        gx += pw + 10
+
+    # ── Metadata row ──
+    meta_y  = gy + pill_h + 28
+    f_label = load_font(11, bold=True)
+    f_val   = load_font(22, bold=True)
+    meta_items = [
+        ("STUDIO",   studio),
+        ("EPISODES", episodes),
+        ("SCORE",    f"{score}%"),
+        ("RATING",   "R"),
+    ]
+    mx = LEFT
+    for label, val in meta_items:
+        draw.text((mx, meta_y),      label, font=f_label, fill=ACCENT)
+        draw.text((mx, meta_y + 18), val,   font=f_val,   fill=WHITE)
+        val_w = draw.textbbox((0,0), val, font=f_val)[2]
+        lbl_w = draw.textbbox((0,0), label, font=f_label)[2]
+        mx += max(val_w, lbl_w) + 36
+
+    # ── Right portrait image ──
+    px = int(W * 0.615)
+    py = int(H * 0.18)
+    pw_img = int(W * 0.285)
+    ph_img = int(H * 0.75)
+
+    p_img = Image.open(io.BytesIO(photo_bytes)).convert("RGB")
+    ratio = pw_img / ph_img
+    ir    = p_img.width / p_img.height
+    if ir > ratio:
+        nw = int(p_img.height * ratio)
+        p_img = p_img.crop(((p_img.width-nw)//2, 0, (p_img.width-nw)//2+nw, p_img.height))
+    else:
+        nh = int(p_img.width / ratio)
+        p_img = p_img.crop((0, (p_img.height-nh)//2, p_img.width, (p_img.height-nh)//2+nh))
+    p_img = p_img.resize((pw_img, ph_img), Image.LANCZOS)
+
+    # rounded mask
+    rmask = Image.new("L", (pw_img, ph_img), 0)
+    ImageDraw.Draw(rmask).rounded_rectangle([0,0,pw_img,ph_img], radius=18, fill=255)
+
+    # soft shadow
+    sh_sz = 18
+    shadow = Image.new("RGBA", (pw_img+sh_sz*2, ph_img+sh_sz*2), (0,0,0,0))
+    ImageDraw.Draw(shadow).rounded_rectangle(
+        [sh_sz, sh_sz, pw_img+sh_sz, ph_img+sh_sz], radius=20, fill=(0,0,0,120))
+    shadow = shadow.filter(ImageFilter.GaussianBlur(12))
+    base.paste(Image.new("RGB", shadow.size, (0,0,0)),
+               (px-sh_sz, py-sh_sz), shadow.split()[3])
+
+    base.paste(p_img, (px, py), rmask)
+    draw = ImageDraw.Draw(base)
+
+    # thin border on image
+    draw.rounded_rectangle([px, py, px+pw_img, py+ph_img],
+                           radius=18, outline=(80,70,100), width=1)
+
+    out = io.BytesIO()
+    base.save(out, format="JPEG", quality=95)
+    out.seek(0)
+    return out.read()
+
 # ─── ANIME FETCH ──────────────────────────────────────────────────────────────
 def fetch_anime(name: str) -> list[dict]:
     try:

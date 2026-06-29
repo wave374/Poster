@@ -862,6 +862,8 @@ async def color_selected(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 
         if style == "cinematic":
             poster_bytes = build_poster_cinematic(anime, photo_bytes, brand, theme_name)
+        elif style == "modern":
+            poster_bytes = build_poster_modern(anime, photo_bytes, brand, theme_name)
         else:
             poster_bytes = build_poster_hex(anime, photo_bytes, brand, theme_name)
 

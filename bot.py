@@ -487,7 +487,7 @@ def build_poster_modern(anime, photo_bytes, brand, theme_name="purple"):
     # dark tint
     tint = Image.new("RGB", (card_w, card_h), (14, 10, 26))
     base.paste(tint, (card_x, card_y),
-               Image.composite(Image.new("L",(card_w,card_h),155),
+               Image.composite(Image.new("L",(card_w,card_h),170),
                                 Image.new("L",(card_w,card_h),0), cmask))
     draw = ImageDraw.Draw(base)
     # accent left bar

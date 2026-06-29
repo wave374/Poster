@@ -5,6 +5,7 @@ import threading
 import re
 import math
 import textwrap
+import json
 import requests
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
 from http.server import HTTPServer, BaseHTTPRequestHandler
@@ -28,14 +29,16 @@ _server = HTTPServer(("0.0.0.0", _port), _Handler)
 threading.Thread(target=_server.serve_forever, daemon=True).start()
 print(f"Dummy server listening on port {_port}")
 
-# ─── CONFIG ───────────────────────────────────────────────────────────────────
+# ─── CONFIG ───────────────────────────────────────────────────────────[...]
 BOT_TOKEN  = "8955163269:AAHuq5mCGQZlPaoDdiTJAtBSFeelgz74sAU"
 BRAND_NAME = "ANIMEFLIO"
 JIKAN_API  = "https://api.jikan.moe/v4"
+OWNER_ID   = 123456789  # Replace with your Telegram user ID
+USERS_FILE = "users.json"
 
 ASK_ANIME, ASK_CONFIRM, ASK_PHOTO, ASK_STYLE, ASK_COLOR, ASK_BRAND = range(6)
 
-# ─── COLOR THEMES ─────────────────────────────────────────────────────────────
+# ─── COLOR THEMES ─────────────────────────────────────────────────────────[...]
 THEMES = {
     "green":  {"accent": (34, 197, 94),  "bg": (13, 26, 13),  "hex_out": (30, 55, 30),  "hex_fill": (13, 22, 13), "emoji": "🟢"},
     "orange": {"accent": (251, 146, 60), "bg": (26, 16, 8),   "hex_out": (55, 30, 10),  "hex_fill": (22, 13, 6),  "emoji": "🟠"},
@@ -54,7 +57,43 @@ GRAY  = (180, 180, 180)
 BLACK = (0, 0, 0)
 W, H  = 1280, 720
 
-# ─── FONT LOADER ──────────────────────────────────────────────────────────────
+# ─── USER TRACKING ────────────────────────────────────────────────────────[...]
+def load_users():
+    """Load users from JSON file."""
+    if os.path.exists(USERS_FILE):
+        try:
+            with open(USERS_FILE, 'r') as f:
+                return json.load(f)
+        except Exception:
+            return {}
+    return {}
+
+def save_users(users):
+    """Save users to JSON file."""
+    try:
+        with open(USERS_FILE, 'w') as f:
+            json.dump(users, f, indent=2)
+    except Exception as e:
+        print(f"Error saving users: {e}")
+
+def track_user(user_id, user_name):
+    """Track a new or existing user."""
+    users = load_users()
+    user_id_str = str(user_id)
+    if user_id_str not in users:
+        users[user_id_str] = {
+            "user_id": user_id,
+            "username": user_name,
+            "first_seen": time.strftime("%Y-%m-%d %H:%M:%S"),
+            "last_seen": time.strftime("%Y-%m-%d %H:%M:%S"),
+            "interaction_count": 1
+        }
+    else:
+        users[user_id_str]["last_seen"] = time.strftime("%Y-%m-%d %H:%M:%S")
+        users[user_id_str]["interaction_count"] += 1
+    save_users(users)
+
+# ─── FONT LOADER ──────────────────────────────────────────────────────────[...]
 def load_font(size, bold=False):
     candidates = (
         ["/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
@@ -81,7 +120,7 @@ def extract_season(title):
         return clean, f"SEASON {num}"
     return title, None
 
-# ─── HEX GRID ─────────────────────────────────────────────────────────────────
+# ─── HEX GRID ───────────────────────────────────────────────────────────[...]
 def draw_hex_grid(draw, width, height, hex_out, hex_fill):
     hex_size = 55
     hex_h    = math.sqrt(3) * hex_size
@@ -99,9 +138,9 @@ def draw_hex_grid(draw, width, height, hex_out, hex_fill):
             ]
             draw.polygon(pts, outline=hex_out, fill=hex_fill)
 
-# ═══════════════════════════════════════════════════════════════════════════════
+# ══════════════════════════════════════════════════════════════════[...]
 # STYLE 1 — Classic Hex
-# ═══════════════════════════════════════════════════════════════════════════════
+# ══════════════════════════════════════════════════════════════════[...]
 def build_poster_hex(anime, photo_bytes, brand, theme_name="green"):
     theme   = THEMES.get(theme_name, THEMES["green"])
     ACCENT  = theme["accent"]
@@ -202,9 +241,9 @@ def build_poster_hex(anime, photo_bytes, brand, theme_name="green"):
     out.seek(0)
     return out.read()
 
-# ═══════════════════════════════════════════════════════════════════════════════
+# ══════════════════════════════════════════════════════════════════[...]
 # STYLE 2 — Cinematic
-# ═══════════════════════════════════════════════════════════════════════════════
+# ══════════════════════════════════════════════════════════════════[...]
 def build_poster_cinematic(anime, photo_bytes, brand, theme_name="cyan"):
     theme  = THEMES.get(theme_name, THEMES["cyan"])
     ACCENT = theme["accent"]
@@ -380,9 +419,9 @@ def build_poster_cinematic(anime, photo_bytes, brand, theme_name="cyan"):
     out.seek(0)
     return out.read()
 
-# ═══════════════════════════════════════════════════════════════════════════════
+# ══════════════════════════════════════════════════════════════════[...]
 # STYLE 3 — Modern UI (Netflix/AniList style)
-# ═══════════════════════════════════════════════════════════════════════════════
+# ══════════════════════════════════════════════════════════════════[...]
 def build_poster_modern(anime, photo_bytes, brand, theme_name="purple"):
     theme  = THEMES.get(theme_name, THEMES["purple"])
     ACCENT = theme["accent"]
@@ -561,9 +600,9 @@ def build_poster_modern(anime, photo_bytes, brand, theme_name="purple"):
     out.seek(0)
     return out.read()
 
-# ═══════════════════════════════════════════════════════════════════════════════
+# ══════════════════════════════════════════════════════════════════[...]
 # STYLE 4 — Channel Banner (Crunchyroll style)
-# ═══════════════════════════════════════════════════════════════════════════════
+# ══════════════════════════════════════════════════════════════════[...]
 def build_poster_banner(anime, photo_bytes, brand, theme_name="green"):
     theme  = THEMES.get(theme_name, THEMES["green"])
     ACCENT = theme["accent"]
@@ -753,7 +792,7 @@ def build_poster_banner(anime, photo_bytes, brand, theme_name="green"):
     out.seek(0)
     return out.read()
 
-# ─── ANIME FETCH ──────────────────────────────────────────────────────────────
+# ─── ANIME FETCH ──────────────────────────────────────────────────────────[...]
 def fetch_anime(name: str) -> list[dict]:
     try:
         query = """
@@ -805,8 +844,12 @@ def fetch_anime(name: str) -> list[dict]:
             time.sleep(3)
     return []
 
-# ─── HANDLERS ─────────────────────────────────────────────────────────────────
+# ─── HANDLERS ───────────────────────────────────────────────────────────[...]
 async def cmd_start(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    user_name = update.effective_user.username or update.effective_user.first_name
+    track_user(user_id, user_name)
+    
     first = update.effective_user.first_name
     welcome_text = (
         f"*ʜᴇʟʟᴏ, {first}*\n\n"
@@ -823,6 +866,50 @@ async def cmd_start(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         caption=welcome_text, parse_mode="MarkdownV2", reply_markup=keyboard,
         message_effect_id="5104841245755180586"
     )
+
+async def cmd_users(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    """Show bot users statistics (owner only)."""
+    user_id = update.effective_user.id
+    
+    # Check if user is owner
+    if user_id != OWNER_ID:
+        await update.message.reply_text(
+            "❌ *Access Denied*\n\nThis command is only available to the bot owner.",
+            parse_mode="Markdown"
+        )
+        return
+    
+    users = load_users()
+    total_users = len(users)
+    
+    if total_users == 0:
+        await update.message.reply_text("📊 *No users tracked yet.*", parse_mode="Markdown")
+        return
+    
+    # Calculate statistics
+    total_interactions = sum(user.get("interaction_count", 0) for user in users.values())
+    
+    # Build user list (limited to first 20 to avoid message being too long)
+    user_list = list(users.values())[:20]
+    user_details = ""
+    for i, user in enumerate(user_list, 1):
+        username = user.get("username", "Unknown")
+        interactions = user.get("interaction_count", 0)
+        first_seen = user.get("first_seen", "N/A")
+        user_details += f"{i}. @{username} — {interactions} interaction(s) (Since {first_seen})\n"
+    
+    if len(users) > 20:
+        user_details += f"\n... and {len(users) - 20} more users"
+    
+    stats_text = (
+        f"📊 *Bot Usage Statistics*\n\n"
+        f"👥 *Total Users:* {total_users}\n"
+        f"💬 *Total Interactions:* {total_interactions}\n"
+        f"📈 *Avg per User:* {total_interactions // total_users if total_users > 0 else 0}\n\n"
+        f"*Recent Users:*\n{user_details}"
+    )
+    
+    await update.message.reply_text(stats_text, parse_mode="Markdown")
 
 async def show_commands_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     await update.callback_query.answer()
@@ -879,6 +966,10 @@ async def cmd_anime_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     return ASK_ANIME
 
 async def cmd_anime(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    user_name = update.effective_user.username or update.effective_user.first_name
+    track_user(user_id, user_name)
+    
     ctx.user_data.clear()
     await update.message.reply_text(
         "🔍 Eɴᴛᴇʀ ᴛʜᴇ *ᴀɴɪᴍᴇ ɴᴀᴍᴇ* ʏᴏᴜ ᴡᴀɴᴛ ᴛᴏ ᴄʀᴇᴀᴛᴇ ᴀ ᴘᴏsᴛᴇʀ ғᴏʀ:",
@@ -1028,7 +1119,7 @@ async def cancel(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("❌ Cancelled.")
     return ConversationHandler.END
 
-# ─── MAIN ─────────────────────────────────────────────────────────────────────
+# ─── MAIN ─────────────────────────────────────────────────────────────[...]
 def main():
     app = Application.builder().token(BOT_TOKEN).build()
 
@@ -1067,6 +1158,7 @@ def main():
     app.add_handler(anime_conv)
     app.add_handler(brand_conv)
     app.add_handler(CommandHandler("start", cmd_start))
+    app.add_handler(CommandHandler("users", cmd_users))
     # These must be registered AFTER conversation handlers
     app.add_handler(CallbackQueryHandler(show_commands_callback, pattern="^show_commands$"))
     app.add_handler(CallbackQueryHandler(cmd_cancel_callback,    pattern="^cmd_cancel$"))

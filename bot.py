@@ -29,7 +29,7 @@ threading.Thread(target=_server.serve_forever, daemon=True).start()
 print(f"Dummy server listening on port {_port}")
 
 # ─── CONFIG ───────────────────────────────────────────────────────────────────
-BOT_TOKEN  = "8620146968:AAFxWlpBGb0BS8ODMUrB_IOwbtoWR2-7mpA"
+BOT_TOKEN  = "8955163269:AAHuq5mCGQZlPaoDdiTJAtBSFeelgz74sAU"
 BRAND_NAME = "ANIMEFLIO"
 JIKAN_API  = "https://api.jikan.moe/v4"
 

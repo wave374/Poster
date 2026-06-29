@@ -34,8 +34,8 @@ threading.Thread(target=_server.serve_forever, daemon=True).start()
 print(f"Dummy server listening on port {_port}")
 
 # ─── CONFIG ───────────────────────────────────────────────────────────────────
-BOT_TOKEN  = "YOUR_BOT_TOKEN_HERE"
-OWNER_ID   = 0          # <- Set your Telegram user ID here (integer)
+BOT_TOKEN  = "8955163269:AAF8rRFM2nYirEU0EvjQgXFc1k7l_MSssvY"
+OWNER_ID   = 7115720502          # <- Set your Telegram user ID here (integer)
 BRAND_NAME = "ANIMEFLIO"
 JIKAN_API  = "https://api.jikan.moe/v4"
 

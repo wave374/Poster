@@ -844,7 +844,7 @@ def fetch_anime(name: str) -> list[dict]:
             time.sleep(3)
     return []
 
-# ─── HANDLERS ───────────────────────────────────────────────────────────[...]
+# ─── HANDLERS ──────────────────────────────────────────────────────────[...]
 async def cmd_start(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     user_name = update.effective_user.username or update.effective_user.first_name
@@ -871,8 +871,11 @@ async def cmd_users(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     """Show bot users statistics (owner only)."""
     user_id = update.effective_user.id
     
+    # DEBUG: Print IDs to console for troubleshooting
+    print(f"DEBUG: User ID = {user_id} (type: {type(user_id)}), Owner ID = {OWNER_ID} (type: {type(OWNER_ID)})")
+    
     # Check if user is owner
-    if user_id != OWNER_ID:
+    if int(user_id) != int(OWNER_ID):
         await update.message.reply_text(
             "❌ *Access Denied*\n\nThis command is only available to the bot owner.",
             parse_mode="Markdown"
@@ -883,7 +886,10 @@ async def cmd_users(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     total_users = len(users)
     
     if total_users == 0:
-        await update.message.reply_text("📊 *No users tracked yet.*", parse_mode="Markdown")
+        await update.message.reply_text(
+            "📊 *No users tracked yet.*\n\nUsers will appear after they use the /anime command.",
+            parse_mode="Markdown"
+        )
         return
     
     # Calculate statistics
